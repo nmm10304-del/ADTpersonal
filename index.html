@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Optimización móvil avanzada -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estatus de Turno - Almacén</title>
+    <style>
+        /* Fondo negro general y estilo oscuro */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #121212; /* Negro profundo */
+            margin: 0;
+            padding: 12px;
+            color: #e2e8f0; /* Texto claro */
+        }
+        .card {
+            background: #1e1e1e; /* Gris oscuro para contraste */
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            border: 1px solid #2d2d2d;
+        }
+        h2 {
+            color: #3b82f6; /* Azul eléctrico */
+            margin-top: 0;
+            font-size: 22px;
+            text-align: center;
+            border-bottom: 2px solid #2d2d2d;
+            padding-bottom: 12px;
+        }
+        label {
+            font-weight: 600;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        textarea {
+            width: 100%;
+            height: 110px;
+            padding: 12px;
+            background-color: #2d2d2d;
+            border: 2px solid #404040;
+            border-radius: 10px;
+            color: #fff;
+            resize: none;
+            font-size: 16px;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        /* Contenedor optimizado con más separación para los botones */
+        .botones-group {
+            display: flex;
+            gap: 16px; /* Separación perfecta entre botones */
+            margin-top: 15px; 
+            margin-bottom: 15px; 
+        }
+        button {
+            flex: 1; /* Hace que ambos botones midan lo mismo */
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-cargar {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+        .btn-cargar:active {
+            background-color: #1d4ed8;
+            transform: scale(0.98);
+        }
+        .btn-eliminar {
+            background-color: #dc2626; /* Rojo */
+            color: white;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+        }
+        .btn-eliminar:active {
+            background-color: #b91c1c;
+            transform: scale(0.98);
+        }
+        .checklist-container {
+            margin-top: 20px;
+        }
+        /* Items de las tareas ajustados al modo oscuro */
+        .tarea-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #262626;
+            padding: 16px; 
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid #525252;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tarea-item.completada {
+            border-left-color: #22c55e;
+            background: #14532d;
+        }
+        .izquierda-item {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            margin-right: 10px;
+        }
+        .tarea-item input[type="checkbox"] {
+            margin-right: 14px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #22c55e;
+        }
+        .tarea-texto {
+            font-size: 16px;
+            font-weight: 500;
+            color: #f8fafc;
+            word-break: break-word;
+        }
+        .tarea-porcentaje {
+            font-size: 15px;
+            font-weight: bold;
+            color: #3b82f6;
+            background: #1e3a8a;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .tarea-item.completada .tarea-texto {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        .tarea-item.completada .tarea-porcentaje {
+            color: #bbf7d0;
+            background: #166534;
+        }
+        /* Marcador de progreso general inferior */
+        .resumen-turno {
+            margin-top: 25px;
+            background: #1e3a8a;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #2563eb;
+        }
+        .resumen-turno label {
+            color: #93c5fd;
+        }
+        .porcentaje-grandote {
+            font-size: 46px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Estatus de Turno - Almacén</h2>
+    
+    <div style="margin-bottom: 15px;">
+        <label for="tareasInput">Tareas del turno (una por línea):</label>
+        <!-- Se eliminó por completo el placeholder de ejemplo -->
+        <textarea id="tareasInput"></textarea>
+        
+        <div class="botones-group">
+            <button class="btn-cargar" onclick="generarChecklist()">Cargar Tareas</button>
+            <button class="btn-eliminar" onclick="eliminarTodo()">Eliminar</button>
+        </div>
+    </div>
+
+    <!-- Contenedor dinámico -->
+    <div id="contenedorChecklist" class="checklist-container"></div>
+
+    <!-- Resumen general -->
+    <div class="resumen-turno">
+        <label>Avance de mi Turno:</label>
+        <div class="porcentaje-grandote"><span id="barraProgreso">0</span>%</div>
+    </div>
+</div>
+
+<script>
+    let pesoPorTarea = 0;
+
+    function generarChecklist() {
+        const infoTextArea = document.getElementById('tareasInput').value;
+        const contenedor = document.getElementById('contenedorChecklist');
+        
+        contenedor.innerHTML = '';
+        document.getElementById('barraProgreso').innerText = '0';
+
+        const lineas = infoTextArea.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
+
+        if (lineas.length === 0) {
+            alert("Por favor, escribe al menos una tarea.");
+            return;
+        }
+
+        pesoPorTarea = 100 / lineas.length;
+
+        lineas.forEach((tarea, index) => {
+            const item = document.createElement('div');
+            item.classList.add('tarea-item');
+            
+            const izquierda = document.createElement('div');
+            izquierda.classList.add('izquierda-item');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `tarea_${index}`;
+            
+            checkbox.onclick = (e) => {
+                e.stopPropagation(); 
+                calcularProgreso();
+            };
+
+            const label = document.createElement('span');
+            label.classList.add('tarea-texto');
+            label.innerText = tarea;
+
+            izquierda.appendChild(checkbox);
+            izquierda.appendChild(label);
+
+            const divPorcentaje = document.createElement('span');
+            divPorcentaje.classList.add('tarea-porcentaje');
+            divPorcentaje.innerText = `${Number(pesoPorTarea.toFixed(1))}%`;
+
+            item.onclick = () => {
+                checkbox.checked = !checkbox.checked;
+                calcularProgreso();
+            };
+
+            item.appendChild(izquierda);
+            item.appendChild(divPorcentaje);
+            contenedor.appendChild(item);
+        });
+
+        document.activeElement.blur();
+    }
+
+    function calcularProgreso() {
+        const checkboxes = document.querySelectorAll('#contenedorChecklist input[type="checkbox"]');
+        let tareasCompletadas = 0;
+
+        checkboxes.forEach(chk => {
+            const contenedorPadre = chk.parentElement.parentElement; 
+            if (chk.checked) {
+                contenedorPadre.classList.add('completada');
+                tareasCompletadas++;
+            } else {
+                contenedorPadre.classList.remove('completada');
+            }
+        });
+
+        let progresoTotal = tareasCompletadas * pesoPorTarea;
+        document.getElementById('barraProgreso').innerText = Math.round(progresoTotal);
+    }
+
+    function eliminarTodo() {
+        document.getElementById('tareasInput').value = '';
+        document.getElementById('contenedorChecklist').innerHTML = '';
+        document.getElementById('barraProgreso').innerText = '0';
+        pesoPorTarea = 0;
+    }
+</script>
+
+</body>
+</html>
