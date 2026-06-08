@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <!-- Optimización móvil avanzada -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Estatus de Turno - Almacén</title>
     <style>
@@ -57,22 +58,39 @@
             outline: none;
             border-color: #3b82f6;
         }
+        /* Contenedor optimizado con más separación para los botones */
+        .botones-group {
+            display: flex;
+            gap: 16px; /* Separación perfecta entre botones */
+            margin-top: 15px; 
+            margin-bottom: 15px; 
+        }
         button {
-            width: 100%;
-            background-color: #2563eb;
-            color: white;
+            flex: 1; /* Hace que ambos botones midan lo mismo */
             border: none;
             padding: 14px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
-        button:active {
+        .btn-cargar {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+        .btn-cargar:active {
             background-color: #1d4ed8;
+            transform: scale(0.98);
+        }
+        .btn-eliminar {
+            background-color: #dc2626; /* Rojo */
+            color: white;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+        }
+        .btn-eliminar:active {
+            background-color: #b91c1c;
             transform: scale(0.98);
         }
         .checklist-container {
@@ -82,7 +100,7 @@
         .tarea-item {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Alinea el texto a la izquierda y el % a la derecha */
+            justify-content: space-between;
             background: #262626;
             padding: 16px; 
             margin-bottom: 10px;
@@ -92,8 +110,8 @@
             transition: all 0.2s ease;
         }
         .tarea-item.completada {
-            border-left-color: #22c55e; /* Verde de completado */
-            background: #14532d; /* Fondo verde oscuro */
+            border-left-color: #22c55e;
+            background: #14532d;
         }
         .izquierda-item {
             display: flex;
@@ -106,7 +124,7 @@
             width: 22px;
             height: 22px;
             cursor: pointer;
-            accent-color: #22c55e; /* Color del check en verde */
+            accent-color: #22c55e;
         }
         .tarea-texto {
             font-size: 16px;
@@ -114,7 +132,6 @@
             color: #f8fafc;
             word-break: break-word;
         }
-        /* Estilo para la visualización del porcentaje individual */
         .tarea-porcentaje {
             font-size: 15px;
             font-weight: bold;
@@ -159,12 +176,19 @@
     
     <div style="margin-bottom: 15px;">
         <label for="tareasInput">Tareas del turno (una por línea):</label>
-        <textarea id="tareasInput" placeholder="Picking&#10;Ingresar el CD&#10;Enviar pallets">Picking&#10;Ingresar el CD&#10;Enviar pallets&#10;Despacho</textarea>
-        <button onclick="generarChecklist()">Cargar Tareas</button>
+        <!-- Se eliminó por completo el placeholder de ejemplo -->
+        <textarea id="tareasInput"></textarea>
+        
+        <div class="botones-group">
+            <button class="btn-cargar" onclick="generarChecklist()">Cargar Tareas</button>
+            <button class="btn-eliminar" onclick="eliminarTodo()">Eliminar</button>
+        </div>
     </div>
 
+    <!-- Contenedor dinámico -->
     <div id="contenedorChecklist" class="checklist-container"></div>
 
+    <!-- Resumen general -->
     <div class="resumen-turno">
         <label>Avance de mi Turno:</label>
         <div class="porcentaje-grandote"><span id="barraProgreso">0</span>%</div>
@@ -194,7 +218,6 @@
             const item = document.createElement('div');
             item.classList.add('tarea-item');
             
-            // Contenedor izquierdo para check y texto
             const izquierda = document.createElement('div');
             izquierda.classList.add('izquierda-item');
 
@@ -214,13 +237,10 @@
             izquierda.appendChild(checkbox);
             izquierda.appendChild(label);
 
-            // Contenedor derecho para el porcentaje matemático individual de la línea
             const divPorcentaje = document.createElement('span');
             divPorcentaje.classList.add('tarea-porcentaje');
-            // Muestra el equivalente redondeado a 1 decimal si es necesario
             divPorcentaje.innerText = `${Number(pesoPorTarea.toFixed(1))}%`;
 
-            // Al hacer clic en la fila se activa
             item.onclick = () => {
                 checkbox.checked = !checkbox.checked;
                 calcularProgreso();
@@ -239,7 +259,7 @@
         let tareasCompletadas = 0;
 
         checkboxes.forEach(chk => {
-            const contenedorPadre = chk.parentElement.parentElement; // Subimos hasta el item principal
+            const contenedorPadre = chk.parentElement.parentElement; 
             if (chk.checked) {
                 contenedorPadre.classList.add('completada');
                 tareasCompletadas++;
@@ -252,8 +272,12 @@
         document.getElementById('barraProgreso').innerText = Math.round(progresoTotal);
     }
 
-    // Carga inicial automática al abrir
-    window.onload = generarChecklist;
+    function eliminarTodo() {
+        document.getElementById('tareasInput').value = '';
+        document.getElementById('contenedorChecklist').innerHTML = '';
+        document.getElementById('barraProgreso').innerText = '0';
+        pesoPorTarea = 0;
+    }
 </script>
 
 </body>
